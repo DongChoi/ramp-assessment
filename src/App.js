@@ -2,6 +2,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import TypeWriterComponent from "./TypeWriterComponent";
 
 function App() {
   const [flag, setFlag] = useState("");
@@ -28,13 +29,12 @@ function App() {
         const htmlContent = response.data;
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlContent, "text/html");
-        finalString = findURL(doc.documentElement, finalString);
-        setFlag(finalString);
+        let url = findURL(doc.documentElement, finalString);
+        const resp = await axios.get(url);
+        setFlag(resp.data);
       } catch (error) {
         console.error("Error fetching HTML:", error);
       }
-
-      return finalString;
     };
 
     const findURL = (node) => {
@@ -68,7 +68,12 @@ function App() {
     };
     fetchData();
   }, []);
-  return <div ref={rootNodeRef}>{flag}</div>;
+
+  if (flag === "") {
+    return <div>Loading...</div>;
+  }
+
+  return <TypeWriterComponent flag={flag} />;
 }
 
 export default App;
